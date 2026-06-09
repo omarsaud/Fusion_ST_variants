@@ -43,17 +43,15 @@ for p in [str(_HERE), str(_ROOT)]:
 import Fusion_ST_variants.train_ablation as _t
 
 # ══════════════════════════════════════════════════════════════════════════════
-# EDIT THIS based on Stage 1 results:
+# Per-condition fusion mapping (from Stage 1 screening):
 # ══════════════════════════════════════════════════════════════════════════════
 BEST_FUSION_MAP = {
-    # Stage 1 METR-LA (60 exp, TCN_DIM=128, LR=5e-4)       avg MAE
-    ("metr-la",   3): "fgm",   # FGM=3.075 | direct=3.124 | pmf=3.261 ✓ CONFIRMED
-    ("metr-la",   6): "fgm",   # FGM=3.720 | direct=3.804 | pmf=3.935 ✓ CONFIRMED
-    ("metr-la",  12): "fgm",   # FGM=4.845 | direct=4.868 | pmf=5.038 ✓ CONFIRMED
-    # Stage 1 PEMS-BAY (partial, mixed TCN_DIM/LR; GWN+FAM blown; GWN@H=12 MISSING)
-    ("pems-bay",  3): "fgm",   # FGM=1.261 | direct=1.281 | pmf=1.321 ✓ CONFIRMED (GWN+FAM excluded—blown)
-    ("pems-bay",  6): "fgm",   # FGM=1.612 | direct=1.621 | pmf=1.647 ✓ CONFIRMED (GWN+FAM excluded—blown)
-    ("pems-bay", 12): "fam",   # FAM=2.026 | FGM=2.117 (GCN-only; GWN@H=12 runs missing — rerun S1 to verify)
+    ("metr-la",   3): "fgm",
+    ("metr-la",   6): "fgm",
+    ("metr-la",  12): "fgm",
+    ("pems-bay",  3): "fgm",
+    ("pems-bay",  6): "fgm",
+    ("pems-bay", 12): "fam",
 }
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -90,8 +88,8 @@ def run_pass(label, dataset, horizons, fusion, save_preds_flag=False):
     _t.ARCHITECTURES   = ["parallel"]
     _t.FUSION_METHODS  = [fusion]
 
-    # Inject save_preds through argparse default trick:
-    # We patch the _parse_args to always return save_preds=True when needed.
+    # Enable prediction saving via argparse default.
+    # Patch _parse_args to inject save_preds when requested.
     import argparse as _ap
     _orig = _ap.ArgumentParser.parse_args
     if save_preds_flag:
@@ -121,7 +119,7 @@ if __name__ == "__main__":
     # PEMS-BAY: H=3 and H=6
     run_pass("Pass 2a-2: PEMS-BAY H=3/6 (FGM)", "pems-bay", [3, 6], "fgm")
 
-    # ── Pass 2b: FAM for PEMS-BAY H=12 (scientifically correct) ──────────────
+    # ── Pass 2b: FAM for PEMS-BAY H=12 ──────────────
     run_pass("Pass 2b: PEMS-BAY H=12 (FAM) — save_preds ON",
              "pems-bay", [12], "fam", save_preds_flag=True)
 

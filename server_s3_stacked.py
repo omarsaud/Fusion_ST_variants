@@ -41,7 +41,7 @@ _t.FUSION_METHODS  = ["direct"]   # stack arch only uses direct
 _t.SEEDS           = [42]
 
 _t.GCN_DIM       = 64
-_t.TCN_DIM       = 64      # aligned with Stage 1/2/3a/4 (was 128)
+_t.TCN_DIM       = 64      # aligned with Stage 1/2/3a/4
 _t.EPOCHS        = 100
 _t.PATIENCE      = 15
 _t.LEARNING_RATE = 1e-3    # (0.001) instead of 5e-4

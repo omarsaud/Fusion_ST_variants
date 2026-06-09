@@ -51,12 +51,11 @@ import Fusion_ST_variants.train_ablation as _t
 # NOTE: Keep fusion_method consistent with Stage 2 per-condition mapping.
 # ─────────────────────────────────────────────────────────────────────────────
 TOP_CONFIGS = {
-    # ↓ Replace these placeholders with actual Stage 2 best results ↓
     ("metr-la",   3): ("GWN",     "AMs",   "fgm"),
-    ("metr-la",   6): ("GWN",     "AMs",   "fgm"),   # NEW: H=6
+    ("metr-la",   6): ("GWN",     "AMs",   "fgm"),
     ("metr-la",  12): ("GWN",     "EnStr", "fgm"),
     ("pems-bay",  3): ("LightGAT","AMs",   "fgm"),
-    ("pems-bay",  6): ("LightGAT","AMs",   "fgm"),   # NEW: H=6
+    ("pems-bay",  6): ("LightGAT","AMs",   "fgm"),
     ("pems-bay", 12): ("LightGAT","EnStr", "fam"),
 }
 

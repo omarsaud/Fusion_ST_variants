@@ -58,13 +58,13 @@ _t.SEEDS = [42]
 
 # ── Optimised hyperparameters (RTX 4090 / server) ─────────────────────────────
 _t.GCN_DIM       = 64      # consistent with Stage 2-4
-_t.TCN_DIM       = 64     # consistent with Stage 2-4 (was 64 on local GPU)
+_t.TCN_DIM       = 64     # consistent with Stage 2-4
 _t.EPOCHS        = 100
 _t.PATIENCE      = 15
 _t.LEARNING_RATE = 1e-3    # (0.001) instead of 5e-4
 _t.WEIGHT_DECAY  = 1e-5
 _t.DROPOUT       = 0.2
-_t.BATCH_SIZE    = 128     # RTX 4090: 24GB VRAM — was 32 on RTX 3050
+_t.BATCH_SIZE    = 128     # RTX 4090: 24GB VRAM
 _t.NUM_WORKERS   = 8       # Linux server: use parallel data loading
 
 # ── Save predictions for Stage-1 best configs (small overhead) ────────────────

@@ -60,20 +60,20 @@ from Fusion_ST_variants.utils.seed import enable_gpu_optimizations, set_seed
 
 DATASET = "[pems-bay]"   # "[metr-la, pems-bay, pems08]" 
 HISTORY = 12
-HORIZONS = [3]  # remain: [3, 6, 12]
+HORIZONS = [3]  # full set: [3, 6, 12]
 
 TRAIN_RATIO = 0.7
 VAL_RATIO = 0.2
 
-GCN_VARIANTS = ["GWN"]# ["GCN", "DiffusionGCN", "GL", "SAGE", "GWN", "GCN+AM", "GCN+Gating", "LightGAT"]  # choose_one: ["GCN+AM"]
+GCN_VARIANTS = ["GWN"]  # full set: ["GCN", "DiffusionGCN", "GL", "SAGE", "GWN", "GCN+AM", "GCN+Gating", "LightGAT"]
 
-TCN_VARIANTS = ["AMs"]#["Default", "EnStr", "GMs", "AMs"]  # choose_one: ["AMs"]
+TCN_VARIANTS = ["AMs"]  # full set: ["Default", "EnStr", "GMs", "AMs"]
 
-ARCHITECTURES = ["parallel", "stack"]  # choose_one: ["parallel", "stack"]
+ARCHITECTURES = ["parallel", "stack"]  # full set: ["parallel", "stack"]
 
-FUSION_METHODS =  ["fgm","direct", "pmf", "fam"]  # choose_one: ["fam"]
+FUSION_METHODS =  ["fgm","direct", "pmf", "fam"]  # full set: ["fgm", "direct", "pmf", "fam"]
 
-SEEDS = [42]  # remain: [42]
+SEEDS = [42]  # full set: [42]
 
 BATCH_SIZE = 64
 EPOCHS = 40
