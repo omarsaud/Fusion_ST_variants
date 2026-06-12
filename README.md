@@ -48,6 +48,8 @@ Fusion_ST_variants/
 │   ├── io.py                # File I/O helpers (CSV append, JSON save)
 │   ├── metrics.py           # MAE / RMSE / MAPE / sMAPE with de-normalization
 │   └── seed.py              # Reproducibility utilities
+├── analysis/
+│   └── diebold_mariano.py   # Diebold-Mariano test of equal predictive accuracy
 ├── train_ablation.py        # Main entry point for ablation runs
 ├── requirements.txt
 └── README.md
@@ -246,7 +248,7 @@ If you use this code in your research, please cite our paper:
 
 ```bibtex
 @article{OMAR2026fusionstvar,
-  title   = {Enhancement Mechanisms and Fusion Strategies in Spatio-Temporal Traffic Prediction: A Taxonomy Validated by 267 Controlled Experiments},
+  title   = {Fusion Strategies and Enhancement Mechanisms in Spatio-Temporal Traffic Prediction: A Taxonomy Validated by 267 Controlled Experiments},
   author  = {Omar Saud Abahussen},
   journal = {Information Fusion},
   year    = {2026}
