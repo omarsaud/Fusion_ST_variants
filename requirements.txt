@@ -1,0 +1,15 @@
+# Core deep learning
+torch>=2.0.0
+numpy>=1.24.0
+
+# Data loading (for METR-LA / PEMS-BAY .h5 files)
+h5py>=3.8.0          # REQUIRED — load_raw.py uses h5py directly for HDF5 reading
+tables>=3.8.0        # PyTables — required by pandas for HDF5
+
+# Optional: used in some analysis/visualization scripts
+pandas>=2.0.0
+scipy>=1.10.0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+tqdm>=4.65.0
