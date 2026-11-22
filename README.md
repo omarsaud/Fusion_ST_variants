@@ -53,6 +53,9 @@ Fusion_ST_variants/
 │   ├── io.py                       # File I/O helpers (CSV append, JSON save)
 │   ├── metrics.py                  # MAE / RMSE / MAPE / sMAPE with de-normalization
 │   └── seed.py                     # Reproducibility utilities
+├── analysis/
+│   ├── diebold_mariano.py          # Diebold–Mariano test between two trained runs
+│   └── evaluate_masked.py          # Inference-only re-evaluation with missing (zero-speed) readings excluded
 │
 ├── train_ablation.py               # Core training engine — called by ALL server scripts
 │
@@ -325,6 +328,20 @@ All metrics are computed **after inverse Z-score scaling** (original speed units
 | sMAPE | Symmetric MAPE |
 
 Horizon-specific metrics (`@3`, `@6`, `@12`) correspond to **15-min**, **30-min**, and **60-min** predictions.
+
+### Masked re-evaluation
+
+MAE and RMSE above are averaged over all test readings, including the zero-speed
+readings that METR-LA and PEMS-BAY use for missing data. To evaluate trained runs
+with those readings excluded, reload the stored checkpoints (no training):
+
+```bash
+python -m Fusion_ST_variants.analysis.evaluate_masked --out masked_eval.csv
+```
+
+This writes, per run, masked MAE/RMSE over all steps and at the final step Q,
+masked MAE on congested (< 40 mph) and free-flow readings, and a check that the
+recomputed unmasked MAE equals the value in `metrics.json`.
 
 ---
 
