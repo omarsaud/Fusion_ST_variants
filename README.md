@@ -1,27 +1,26 @@
 # Fusion_ST_variants
 
-> **Enhancement Mechanisms and Fusion Strategies in Spatio-Temporal Deep Learning for Traffic Prediction: A Systematic Review and Empirical Analysis**
+> **Fusion Strategies and Enhancement Mechanisms in Spatio-Temporal Traffic Prediction: A Systematic Review with a Controlled GCN–TCN Comparison**
 >
-> Empirical codebase accompanying a peer-reviewed manuscript (under review).
+> Empirical code accompanying the manuscript.
 >
 > **Authors:** Omar S. Aba Hussen · Shaiful J. Hashim · Khairulmizam Samsudin · Helmi Z. M. Shafri
->
-> **GitHub:** https://github.com/omarsaud/Fusion_ST_variants *(private repository — will be made public upon manuscript acceptance)*
 
 ---
 
 ## Overview
 
-`Fusion_ST_variants` is the controlled empirical component of a two-stage research contribution:
+`Fusion_ST_variants` is the controlled empirical component of a two-part study:
 
-1. **Systematic review** — 131 peer-reviewed articles (2018–March 2026) synthesised into an *enhancement-oriented taxonomy* classifying GCN, TCN, and fusion techniques by their underlying refinement mechanisms.
-2. **Empirical validation** — The taxonomy is stress-tested through **267 valid experiments** spanning 6 GCN variants × 4 TCN variants × 5 fusion methods × 2 benchmark datasets × 3 prediction horizons, with 6 top configurations re-validated across 3 random seeds.
+1. **Systematic review** — 131 peer-reviewed journal articles (2018–March 2026) synthesised into an *enhancement-oriented taxonomy* that organises spatial, temporal and fusion techniques by refinement mechanism rather than backbone.
+2. **Controlled comparison** — one model family of that taxonomy (GCN–TCN) is tested in **255 valid single-seed experiments**: 6 GCN variants × 4 TCN variants, 4 parallel fusion operators and a plain stacked baseline, on METR-LA and PEMS-BAY at three horizons, with every variant reduced to its core mechanism at matched width and training budget. One leading configuration per condition is retrained with two further seeds.
 
-### Headline results
+### Headline results (within this GCN–TCN scope)
 
-- **Spatial enhancement is the dominant design axis** — GCN variant selection produces **1.15–1.98× larger MAE spread** than TCN selection across all six dataset–horizon conditions.
-- **Parallel integration consistently outperforms sequential (stacked) designs** — **24.5–49.8% MAE reduction** over stacked baselines; largest advantage at short horizons where sequential spatial pre-smoothing creates an information bottleneck.
-- **Fusion method is condition-sensitive** — FGM (gated) is optimal in **5 of 6 conditions**; FAM (attention) wins for PEMS-BAY H=12 (dense network, long horizon). An architectural incompatibility is reproducibly characterised: **GWN + FAM → gradient explosion** across all 14 pairings.
+- **Integration decision first** — parallel fusion wins **35 of 44** configuration-matched comparisons against plain stacking (exact sign test p ≈ 10⁻⁴; median MAE reduction 28.9%). The result holds with missing readings excluded (36 of 44) and under RMSE, but is **not significant in congested traffic** (< 40 mph: 28 of 44, p = 0.096). The parallel models are also larger (median 1.41× the parameters of their stacked counterparts), so part of the advantage may reflect capacity.
+- **Fusion operator second** — gated fusion (FGM) is primary in 5 of 6 conditions; attention fusion (FAM) in the dense, long-horizon setting (PEMS-BAY, H = 12).
+- **Component choice third** — within-family spreads (0.031–0.129 MAE) are an order of magnitude smaller, and their rankings change with the fusion operator and, on METR-LA, with the error metric.
+- **Training instability** — the Chebyshev spectral GCN (key `GWN`) paired with FAM produces a non-finite training loss in all 14 attempted runs.
 
 ---
 
@@ -59,11 +58,11 @@ Fusion_ST_variants/
 │
 ├── train_ablation.py               # Core training engine — called by ALL server scripts
 │
-├── server_s1_fusion_screen.py      # Stage 1 : Fusion screening          (48 experiments)
-├── server_s2_full_sweep.py         # Stage 2 : Full GCN × TCN sweep      (144 experiments)
-├── server_s3_fusion_confirm.py     # Stage 3a: Fusion confirmation        (30 experiments)
-├── server_s3_stacked.py            # Stage 3b: Stacked architecture baseline (36 experiments)
-├── server_s4_multiseed.py          # Stage 4 : Multi-seed robustness      (12 new experiments)
+├── server_s1_fusion_screen.py      # Step 1 : Fusion screening
+├── server_s2_full_sweep.py         # Step 2 : Full GCN × TCN sweep
+├── server_s3_fusion_confirm.py     # Step 2b: Fusion confirmation (secondary fusions)
+├── server_s3_stacked.py            # Step 3 : Stacked architecture baseline
+├── server_s4_multiseed.py          # Seed-stability runs (seeds 123, 456)
 ├── server_analyze.py               # Post-run analysis: tables, figures, statistics
 │
 ├── requirements.txt
@@ -77,23 +76,25 @@ Fusion_ST_variants/
 
 ---
 
-## Four-Stage Experimental Protocol
+## Experimental Protocol
 
-A naïve full-factorial design would require **2,160 training runs**
-(6 GCN × 4 TCN × 5 fusion × 2 datasets × 3 horizons × 3 seeds).
-Instead, a *taxonomy-informed sequential filtering strategy* reduces this to 292 runs while
-preserving complete coverage of the most informative region of the design space.
+A full-factorial design would require 6 × 4 × 5 × 2 × 3 = **720 single-seed runs**.
+Instead, a *taxonomy-informed sequential-filtering strategy* is used. The manuscript describes it
+as three stages (fusion screening, full GCN × TCN sweep, stacked baseline); the scripts below
+implement those stages plus the fusion-confirmation runs and the seed-stability runs.
 
-| Stage | Script | Experiments | Purpose |
-|-------|--------|:-----------:|---------|
-| **1 — Fusion Screening** | `server_s1_fusion_screen.py` | 48 | Identify best fusion per (dataset × horizon) using 2 representative GCN × 2 TCN proxy pairs. **Must run before Stage 2.** |
-| **2 — Full Encoder Sweep** | `server_s2_full_sweep.py` | 144 | All 6 GCN × 4 TCN combinations with per-condition best fusion fixed (2 passes). Answers **RQ1** and **RQ2**. |
-| **3a — Fusion Confirmation** | `server_s3_fusion_confirm.py` | 30 | All 4 fusion methods on the single best encoder pair (from Stage 2). Answers **RQ3** rigorously. |
-| **3b — Stacked Baseline** | `server_s3_stacked.py` | 36 | 6 GCN × Default TCN in stacked mode. Provides the RQ3 counterfactual: parallel vs. sequential. |
-| **4 — Multi-Seed Validation** | `server_s4_multiseed.py` | 12 new | Best config per condition run with seeds 123 and 456 (seed 42 already exists from Stage 2). Confirms CV < 0.93%. |
-| **Total** | | **~292** | 267 valid; 25 excluded (see anomaly notes below) |
+| Step | Script | Purpose |
+|------|--------|---------|
+| **1 — Fusion Screening** | `server_s1_fusion_screen.py` | Select the primary fusion per (dataset × horizon) on representative encoder pairs. **Must run before Step 2.** |
+| **2 — Full Encoder Sweep** | `server_s2_full_sweep.py` | All 6 GCN × 4 TCN combinations with the primary fusion per condition fixed. Answers **RQ1** and **RQ2**. |
+| **2b — Fusion Confirmation** | `server_s3_fusion_confirm.py` | Secondary fusion methods on a subset of encoder pairs. Used for **RQ3**. |
+| **3 — Stacked Baseline** | `server_s3_stacked.py` | Encoder pairs in stacked (sequential) mode: the parallel vs. stacked comparison for **RQ3**. |
+| **Seed stability** | `server_s4_multiseed.py` | One leading configuration per condition retrained with seeds 123 and 456 (coefficient of variation 0.15–0.94%). |
 
-### Stage 1 results (already coded in `server_s2_full_sweep.py`)
+Run counts: **280** training runs at the primary seed (42), of which 25 anomalous runs are
+excluded (see below), leaving **255 valid experiments**; plus **12** seed-stability runs.
+
+### Step 1 results (already coded in `server_s2_full_sweep.py`)
 
 ```python
 BEST_FUSION_MAP = {
@@ -106,20 +107,23 @@ BEST_FUSION_MAP = {
 }
 ```
 
-### Required manual edits before Stage 3 and Stage 4
+### Required manual edits before the fusion-confirmation and seed-stability scripts
 
 | Script | Variable | How to determine |
 |--------|----------|-----------------|
-| `server_s3_fusion_confirm.py` | `BEST_GCN`, `BEST_TCN` | GCN+TCN pair winning most conditions in Stage 2 CSV |
-| `server_s4_multiseed.py` | `TOP_CONFIGS` | Best `(gcn, tcn, fusion)` per `(dataset, horizon)` from Stage 2 CSV |
+| `server_s3_fusion_confirm.py` | `BEST_GCN`, `BEST_TCN` | GCN+TCN pair winning most conditions in the Step 2 CSV |
+| `server_s4_multiseed.py` | `TOP_CONFIGS` | Best `(gcn, tcn, fusion)` per `(dataset, horizon)` from the Step 2 CSV |
 
 ### Anomalous runs (excluded from analysis)
 
 | Type | Count | Description |
 |------|:-----:|-------------|
-| **GWN + FAM gradient explosion** | 14 | NaN training loss from epoch 1 across all conditions — reproducible architectural incompatibility |
-| **GCN+AM + PEMS-BAY NaN** | 10 | NaN validation MAE from epoch 1 on PEMS-BAY; numerical singularity in denormalisation pass |
-| **Incomplete test evaluation** | 1 | GWN + AMs + FGM on PEMS-BAY H=12; server interruption during final test step |
+| **GWN + FAM divergence** | 14 | Non-finite training loss from epoch 1 in all six conditions — a reproducible instability of this spectral-filter implementation with attention fusion |
+| **GCN+AM + PEMS-BAY NaN** | 10 | NaN validation MAE from epoch 1 on PEMS-BAY (10 of 15 GCN+AM PEMS-BAY runs; the other 5 complete normally) |
+| **Incomplete test evaluation** | 1 | GWN + AMs + FGM on PEMS-BAY H=12; test-set evaluation interrupted before results were recorded |
+
+Names used in the manuscript for the keys below: `GWN` = Chebyshev Spectral GCN, `DiffusionGCN` = dGCN,
+`GCN+AM` = GCN+AMs, `GCN+Gating` = GCN+Gate, `Default` = D-TCN, `AMs` / `EnStr` / `STech` = TCN+AMs / TCN+EnStr / TCN+STech.
 
 ---
 
@@ -127,7 +131,7 @@ BEST_FUSION_MAP = {
 
 ### GCN Variants
 
-| Key | Class | Taxonomy Category | Stage 2 |
+| Key | Class | Taxonomy Category | Step 2 |
 |-----|-------|-------------------|:-------:|
 | `GCN` | `GCNLayer` | Backbone baseline | ✓ |
 | `DiffusionGCN` | `DiffusionGCN` | Structural refinement (multi-hop diffusion) | ✓ |
@@ -140,7 +144,7 @@ BEST_FUSION_MAP = {
 
 ### TCN Variants
 
-| Key | Taxonomy Category | Description | Stage 2 |
+| Key | Taxonomy Category | Description | Step 2 |
 |-----|-------------------|-------------|:-------:|
 | `Default` | Backbone baseline | Standard dilated causal TCN | ✓ |
 | `EnStr` | Structural refinement | Multi-scale dilated / enhanced strided TCN | ✓ |
@@ -220,19 +224,19 @@ Requires **Python ≥ 3.9** and **PyTorch ≥ 2.0** (CUDA strongly recommended f
 Run all commands from the **project root** (the parent directory of `Fusion_ST_variants/`):
 
 ```bash
-# Stage 1 — Fusion screening  ← run first; required before Stage 2
+# Step 1 — Fusion screening  ← run first; required before Step 2
 python Fusion_ST_variants/server_s1_fusion_screen.py
 
-# Stage 2 — Full GCN × TCN sweep  ← verify BEST_FUSION_MAP in script first
+# Step 2 — Full GCN × TCN sweep  ← verify BEST_FUSION_MAP in script first
 python Fusion_ST_variants/server_s2_full_sweep.py
 
-# Stage 3a — Fusion confirmation  ← set BEST_GCN / BEST_TCN from Stage 2 results
+# Step 2b — Fusion confirmation  ← set BEST_GCN / BEST_TCN from Step 2 results
 python Fusion_ST_variants/server_s3_fusion_confirm.py
 
-# Stage 3b — Stacked architecture baseline
+# Step 3 — Stacked architecture baseline
 python Fusion_ST_variants/server_s3_stacked.py
 
-# Stage 4 — Multi-seed robustness  ← set TOP_CONFIGS from Stage 2 results
+# Seed stability  ← set TOP_CONFIGS from Step 2 results
 python Fusion_ST_variants/server_s4_multiseed.py
 
 # Post-run analysis: generate tables and figures
@@ -347,7 +351,7 @@ recomputed unmasked MAE equals the value in `metrics.json`.
 
 ## Hyperparameter Configuration
 
-The following values are applied uniformly across all staged experiments (Stages 1–4), consistent with the values reported in the manuscript:
+The following values are applied uniformly across all staged experiments, consistent with the values reported in the manuscript:
 
 | Hyperparameter | Value |
 |----------------|-------|
@@ -370,14 +374,14 @@ The following values are applied uniformly across all staged experiments (Stages
 
 ## Runtime Estimates
 
-| Stage | Script | Experiments | RTX 3050 (6 GB) | RTX 4090 (24 GB) |
-|-------|--------|:-----------:|:---------------:|:----------------:|
-| 1 | `server_s1_fusion_screen.py` | 48 | ~16–22 h | ~5–8 h |
-| 2 | `server_s2_full_sweep.py` | 144 | ~46–60 h | ~16–21 h |
-| 3a | `server_s3_fusion_confirm.py` | 30 | ~10–14 h | ~3–5 h |
-| 3b | `server_s3_stacked.py` | 36 | ~10–14 h | ~3–5 h |
-| 4 | `server_s4_multiseed.py` | 12 | ~7–12 h | ~2–4 h |
-| **Total** | | **~270** | **~89–122 h** | **~29–43 h** |
+| Step | Script | RTX 3050 (6 GB) | RTX 4090 (24 GB) |
+|------|--------|:---------------:|:----------------:|
+| 1 | `server_s1_fusion_screen.py` | ~16–22 h | ~5–8 h |
+| 2 | `server_s2_full_sweep.py` | ~46–60 h | ~16–21 h |
+| 2b | `server_s3_fusion_confirm.py` | ~10–14 h | ~3–5 h |
+| 3 | `server_s3_stacked.py` | ~10–14 h | ~3–5 h |
+| Seed stability | `server_s4_multiseed.py` | ~7–12 h | ~2–4 h |
+| **Total** | | **~89–122 h** | **~29–43 h** |
 
 > Server scripts are pre-configured for `batch_size=128, num_workers=8` (Linux server / RTX 4090).
 > Reduce `BATCH_SIZE` and `NUM_WORKERS` when running locally on a smaller GPU.
@@ -388,9 +392,9 @@ The following values are applied uniformly across all staged experiments (Stages
 
 - Data splits are **chronological**: 70% train / 20% val / 10% test (DCRNN protocol, Li et al. 2018).
 - Z-score scaler is **fit on the training slice only** — no data leakage into val/test.
-- Primary seed: `42`. Additional seeds for Stage 4: `123`, `456`.
+- Primary seed: `42`. Additional seeds for the seed-stability runs: `123`, `456`.
 - Completed runs are **automatically skipped** — use `--force` to re-run.
-- All 25 anomalous runs (GWN+FAM divergence, GCN+AM NaN on PEMS-BAY) are reproducible and documented in the manuscript (Section 5.1.3).
+- The 25 excluded runs (GWN+FAM divergence, GCN+AM NaN on PEMS-BAY, one incomplete evaluation) are documented in the manuscript's experimental-protocol section.
 
 ---
 
@@ -398,14 +402,16 @@ The following values are applied uniformly across all staged experiments (Stages
 
 | Finding | Result |
 |---------|--------|
-| Spatial vs. temporal MAE spread ratio | 1.15–1.98× across all 6 conditions (spatial always dominant) |
-| Best spatial variant (METR-LA) | GCN+Gating — gating suppresses noisy neighbours in sparse highway graph |
-| Best spatial variant (PEMS-BAY) | LightGAT / GCN+AM — within-aggregation attention suits denser topology |
-| Parallel vs. stacked MAE reduction | 24.5–49.8% (largest advantage at H=3) |
-| Best fusion (5/6 conditions) | FGM (gated) |
-| Best fusion (PEMS-BAY H=12) | FAM (cross-modal attention) |
-| Architectural incompatibility | GWN + FAM → gradient explosion (14 runs, all datasets/horizons) |
-| Multi-seed coefficient of variation | < 0.93% — confirms ordinal stability of rankings |
+| Parallel vs. stacked (44 configuration-matched pairs) | Parallel wins 35 of 44 (exact sign test p ≈ 10⁻⁴); median MAE reduction 28.9% |
+| Missing readings excluded (masked MAE) | Parallel wins 36 of 44; in congested traffic (< 40 mph) 28 of 44, p = 0.096 — not significant |
+| Model size | Parallel models have median 1.41× the parameters of their stacked counterparts |
+| Stacking failure tail | 16 of 45 stacked runs exceed MAE 5 |
+| Primary fusion | FGM in 5 of 6 conditions; FAM at PEMS-BAY H=12 |
+| Temporal component | TCN+AMs (`AMs`) has the lowest marginal MAE in all six conditions; under RMSE the METR-LA ordering changes |
+| Spatial component | GCN+Gate (`GCN+Gating`) leads at short horizons, LightGAT at medium-to-long horizons |
+| Within-family MAE spread | 0.031–0.129 |
+| Training instability | GWN + FAM: non-finite training loss in all 14 attempted runs |
+| Seed stability (one leading configuration per condition) | Coefficient of variation 0.15–0.94% |
 
 ---
 
@@ -414,13 +420,13 @@ The following values are applied uniformly across all staged experiments (Stages
 If you use this code in your research, please cite:
 
 ```bibtex
-@article{AbahussenHashim2026fusionstvar,
-  title   = {Enhancement Mechanisms and Fusion Strategies in Spatio-Temporal Deep
-             Learning for Traffic Prediction: A Systematic Review and Empirical Analysis},
+@unpublished{AbahussenHashim2026fusionstvar,
+  title   = {Fusion Strategies and Enhancement Mechanisms in Spatio-Temporal Traffic
+             Prediction: A Systematic Review with a Controlled GCN--TCN Comparison},
   author  = {Aba Hussen, Omar S. and Hashim, Shaiful J. and
              Samsudin, Khairulmizam and Shafri, Helmi Z. M.},
   year    = {2026},
-  note    = {Under review}
+  note    = {Manuscript}
 }
 ```
 
