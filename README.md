@@ -96,6 +96,8 @@ excluded (see below), leaving **255 valid experiments**; plus **12** seed-stabil
 
 ### Step 1 results (already coded in `server_s2_full_sweep.py`)
 
+The primary fusion per condition is the one with the lowest mean validation loss over the Step 1 grid. The original screen ranked fusions by mean test MAE; `analysis/stage1_selection_check.py` re-ranks the same runs by validation loss and selects the same fusion in all six conditions (Supplementary Table S2 of the manuscript).
+
 ```python
 BEST_FUSION_MAP = {
     ("metr-la",   3): "fgm",   # FGM confirmed
