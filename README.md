@@ -12,7 +12,7 @@
 
 `Fusion_ST_variants` is the controlled empirical component of a two-part study:
 
-1. **Systematic review** — 124 peer-reviewed journal articles (2018–March 2026) synthesised into an *enhancement-oriented taxonomy* that organises spatial, temporal and fusion techniques by refinement mechanism rather than backbone.
+1. **Systematic review** — 123 peer-reviewed journal articles (2018–March 2026) synthesised into an *enhancement-oriented taxonomy* that organises spatial, temporal and fusion techniques by refinement mechanism rather than backbone.
 2. **Controlled comparison** — one model family of that taxonomy (GCN–TCN) is tested in **255 valid single-seed experiments**: 6 GCN variants × 4 TCN variants, 4 parallel fusion operators and a plain stacked baseline, on METR-LA and PEMS-BAY at three horizons, with every variant in a deliberately reduced form under one training budget. One leading configuration per condition is retrained with two further seeds.
 
 ### Headline results (within this GCN–TCN scope)
