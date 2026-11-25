@@ -13,14 +13,15 @@
 `Fusion_ST_variants` is the controlled empirical component of a two-part study:
 
 1. **Systematic review** — 124 peer-reviewed journal articles (2018–March 2026) synthesised into an *enhancement-oriented taxonomy* that organises spatial, temporal and fusion techniques by refinement mechanism rather than backbone.
-2. **Controlled comparison** — one model family of that taxonomy (GCN–TCN) is tested in **255 valid single-seed experiments**: 6 GCN variants × 4 TCN variants, 4 parallel fusion operators and a plain stacked baseline, on METR-LA and PEMS-BAY at three horizons, with every variant reduced to its core mechanism at matched width and training budget. One leading configuration per condition is retrained with two further seeds.
+2. **Controlled comparison** — one model family of that taxonomy (GCN–TCN) is tested in **255 valid single-seed experiments**: 6 GCN variants × 4 TCN variants, 4 parallel fusion operators and a plain stacked baseline, on METR-LA and PEMS-BAY at three horizons, with every variant in a deliberately reduced form under one training budget. One leading configuration per condition is retrained with two further seeds.
 
 ### Headline results (within this GCN–TCN scope)
 
-- **Integration decision first** — parallel fusion wins **35 of 44** configuration-matched comparisons against plain stacking (exact sign test p ≈ 10⁻⁴; median MAE reduction 28.9%). The result holds with missing readings excluded (36 of 44) and under RMSE, but is **not significant in congested traffic** (< 40 mph: 28 of 44, p = 0.096). The parallel models are also larger (median 1.41× the parameters of their stacked counterparts), so part of the advantage may reflect capacity.
-- **Fusion operator second** — gated fusion (FGM) is primary in 5 of 6 conditions; attention fusion (FAM) in the dense, long-horizon setting (PEMS-BAY, H = 12).
-- **Component choice third** — within-family spreads (0.031–0.129 MAE) are an order of magnitude smaller, and their rankings change with the fusion operator and, on METR-LA, with the error metric.
-- **Training instability** — the Chebyshev spectral GCN (key `GWN`) paired with FAM produces a non-finite training loss in all 14 attempted runs.
+- **The cost of stacking depends on the spatial encoder** — parallel fusion wins **35 of 44** configuration-matched comparisons (exact sign test p ≈ 10⁻⁴; median MAE reduction 28.1%): **24 of 24** for encoders without a shortcut (median 40.2%) and **11 of 20** for encoders with a shortcut and layer normalisation (median 0.4%). In congested traffic (< 40 mph, missing readings excluded) the two groups give opposite results (24 of 24 and 4 of 20).
+- **Post-hoc shortcut control** — adding only a learned shortcut to the stacked GCN, dGCN and Spectral GCN encoders (H = 12) brings their MAE to 0.97–1.00 of plain parallel FGM; layer normalisation alone (GCN) changes it by less than 0.2%. See `posthoc_shortcut_runs.py`.
+- **Fusion operator** — gated fusion (FGM) is primary in 5 of 6 conditions; attention fusion (FAM) at PEMS-BAY, H = 12.
+- **Component choice** — parallel-arm MAE spreads are 0.031–0.129; component and integration effects interact and are not ranked.
+- **Training instability** — the Spectral GCN (key `GWN`, a fixed sum of Laplacian powers) paired with FAM has a non-finite training loss in all 14 attempted runs under half-precision training.
 
 ---
 
@@ -54,6 +55,7 @@ Fusion_ST_variants/
 │   └── seed.py                     # Reproducibility utilities
 ├── analysis/
 │   ├── diebold_mariano.py          # Diebold–Mariano test between two trained runs
+│   ├── run_settings.csv            # Recorded setting of each of the 255 runs
 │   └── evaluate_masked.py          # Inference-only re-evaluation with missing (zero-speed) readings excluded
 │
 ├── train_ablation.py               # Core training engine — called by ALL server scripts
@@ -63,6 +65,8 @@ Fusion_ST_variants/
 ├── server_s3_fusion_confirm.py     # Step 2b: Fusion confirmation (secondary fusions)
 ├── server_s3_stacked.py            # Step 3 : Stacked architecture baseline
 ├── server_s4_multiseed.py          # Seed-stability runs (seeds 123, 456)
+├── posthoc_shortcut_runs.py        # Post-hoc runs: 14 shortcut controls + 3 single-precision reruns
+├── rerun_recorded.py               # Re-train any recorded run with its recorded setting
 ├── server_analyze.py               # Post-run analysis: tables, figures, statistics
 │
 ├── requirements.txt
@@ -124,8 +128,12 @@ BEST_FUSION_MAP = {
 | **GCN+AM + PEMS-BAY NaN** | 10 | NaN validation MAE from epoch 1 on PEMS-BAY (10 of 15 GCN+AM PEMS-BAY runs; the other 5 complete normally) |
 | **Incomplete test evaluation** | 1 | GWN + AMs + FGM on PEMS-BAY H=12; test-set evaluation interrupted before results were recorded |
 
-Names used in the manuscript for the keys below: `GWN` = Chebyshev Spectral GCN, `DiffusionGCN` = dGCN,
+Names used in the manuscript for the keys below: `GWN` = Spectral GCN, `DiffusionGCN` = dGCN,
 `GCN+AM` = GCN+AMs, `GCN+Gating` = GCN+Gate, `Default` = D-TCN, `AMs` / `EnStr` / `STech` = TCN+AMs / TCN+EnStr / TCN+STech.
+D-TCN is two causal convolution layers (kernel 2, dilation 1) and its output sees the last 3 of 12 input steps; `EnStr` sees the last 4.
+
+Three stacked Spectral GCN + TCN+AMs METR-LA runs (H = 3, 6, 12) also had a non-finite loss in every epoch; they are replaced by
+single-precision reruns (`posthoc_shortcut_runs.py`, runs 8–10) in the matched-pair comparison.
 
 ---
 
@@ -353,7 +361,7 @@ recomputed unmasked MAE equals the value in `metrics.json`.
 
 ## Hyperparameter Configuration
 
-The following values are applied uniformly across all staged experiments, consistent with the values reported in the manuscript:
+The staged server scripts use the values below. The 255 analysed runs are **not uniform**: 199 used them, and 56 used TCN hidden dimension **128** and learning rate **5 × 10⁻⁴** (one of these also batch size 256). The recorded setting of every run is in `analysis/run_settings.csv`; `rerun_recorded.py` trains any run with its recorded setting. Training uses half-precision autocasting and gradient-norm clipping at 5; evaluation is in single precision.
 
 | Hyperparameter | Value |
 |----------------|-------|
@@ -392,7 +400,7 @@ The following values are applied uniformly across all staged experiments, consis
 
 ## Reproducibility
 
-- Data splits are **chronological**: 70% train / 20% val / 10% test (DCRNN protocol, Li et al. 2018).
+- Data splits are **chronological**: 70% train / 20% val / 10% test (Li et al. 2018 use 10% validation and 20% test).
 - Z-score scaler is **fit on the training slice only** — no data leakage into val/test.
 - Primary seed: `42`. Additional seeds for the seed-stability runs: `123`, `456`.
 - Completed runs are **automatically skipped** — use `--force` to re-run.
@@ -404,13 +412,13 @@ The following values are applied uniformly across all staged experiments, consis
 
 | Finding | Result |
 |---------|--------|
-| Parallel vs. stacked (44 configuration-matched pairs) | Parallel wins 35 of 44 (exact sign test p ≈ 10⁻⁴); median MAE reduction 28.9% |
+| Parallel vs. stacked (44 configuration-matched pairs) | Parallel wins 35 of 44 (exact sign test p ≈ 10⁻⁴); median MAE reduction 28.1%; 24 of 24 without a shortcut, 11 of 20 with one |
 | Missing readings excluded (masked MAE) | Parallel wins 36 of 44; in congested traffic (< 40 mph) 28 of 44, p = 0.096 — not significant |
 | Model size | Parallel models have median 1.41× the parameters of their stacked counterparts |
-| Stacking failure tail | 16 of 45 stacked runs exceed MAE 5 |
+| Stacking without a shortcut | Stacked MAE is 1.35–2.61× the parallel value in all 24 pairs |
 | Primary fusion | FGM in 5 of 6 conditions; FAM at PEMS-BAY H=12 |
 | Temporal component | TCN+AMs (`AMs`) has the lowest marginal MAE in all six conditions; under RMSE the METR-LA ordering changes |
-| Spatial component | GCN+Gate (`GCN+Gating`) leads at short horizons, LightGAT at medium-to-long horizons |
+| Spatial component | GCN+Gate (`GCN+Gating`) and LightGAT lead the marginals; both also contain a shortcut and layer normalisation |
 | Within-family MAE spread | 0.031–0.129 |
 | Training instability | GWN + FAM: non-finite training loss in all 14 attempted runs |
 | Seed stability (one leading configuration per condition) | Coefficient of variation 0.15–0.94% |
