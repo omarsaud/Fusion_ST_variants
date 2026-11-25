@@ -27,9 +27,10 @@
 
 | RQ | Question |
 |----|----------|
-| **RQ1** | How do different spatial (GCN) enhancement mechanisms affect prediction accuracy across network topologies and prediction horizons? |
-| **RQ2** | How do different temporal (TCN) enhancement mechanisms affect accuracy, and does their relative benefit depend on the horizon or dataset? |
-| **RQ3** | How do parallel fusion strategies compare with stacked (sequential) integration, and does the optimal fusion subtype vary across dataset–horizon conditions? |
+| **RQ1** | Which spatial, temporal and fusion mechanisms does the traffic prediction literature use, and how has their use changed from 2018 to 2026? (answered by the review) |
+| **RQ2** | How do different spatial (GCN) enhancement mechanisms affect prediction accuracy across network topologies and prediction horizons? |
+| **RQ3** | How do different temporal (TCN) enhancement mechanisms affect accuracy, and does their relative benefit depend on the horizon or dataset? |
+| **RQ4** | How do parallel fusion strategies compare with stacked (sequential) integration, and does the optimal fusion subtype vary across dataset–horizon conditions? |
 
 ---
 
@@ -143,11 +144,11 @@ single-precision reruns (`posthoc_shortcut_runs.py`, runs 8–10) in the matched
 |-----|-------|-------------------|:-------:|
 | `GCN` | `GCNLayer` | Backbone baseline | ✓ |
 | `DiffusionGCN` | `DiffusionGCN` | Structural refinement (multi-hop diffusion) | ✓ |
-| `GWN` | `GraphWaveletNetwork` | Structural refinement (adaptive adjacency, multi-scale spectral) | ✓ |
+| `GWN` | `GraphWaveletNetwork` | Structural refinement (fixed sum of Laplacian powers; Spectral GCN in the manuscript) | ✓ |
 | `GCN+AM` | `GCNWithAttention` | Attention-based refinement (post-aggregation, multi-head) | ✓ |
 | `GCN+Gating` | `GCNWithGating` | Gated / auxiliary mechanism (feature + update gates) | ✓ |
 | `LightGAT` | `LightGraphAttentionNetwork` | Attention-based refinement (integrated, within-aggregation) | ✓ |
-| `GL` | `GraphAdaptiveLearning` | *(Excluded — redundant with GWN adaptive adjacency)* | — |
+| `GL` | `GraphAdaptiveLearning` | *(Not part of the compared variants)* | — |
 | `SAGE` | `GraphSAGE` | *(Excluded — not designed for road-graph topology)* | — |
 
 ### TCN Variants
@@ -167,7 +168,7 @@ single-precision reruns (`posthoc_shortcut_runs.py`, runs 8–10) in the matched
 | `fgm` | parallel | Sigmoid-gated | Feature Gating Mechanism — sigmoid gate on concatenated features |
 | `fam` | parallel | Cross-modal attention | Fusion Attention Mechanism — multi-head self-attention over combined features |
 | `pmf` | parallel | Parameter-matrix projection | Parametric Matrix Fusion — learnable linear mixing matrix |
-| `direct` | parallel / stack | Baseline concatenation | Direct additive / concatenation — no learnable fusion gate |
+| `direct` | parallel / stack | Baseline concatenation | Direct concatenation — no learnable fusion gate |
 
 > **Stack architecture** always uses `direct` (GCN → TCN in series; output passed through, no fusion head).
 
