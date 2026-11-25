@@ -98,7 +98,7 @@ excluded (see below), leaving **255 valid experiments**; plus **12** seed-stabil
 
 ### Step 1 results (already coded in `server_s2_full_sweep.py`)
 
-The primary fusion per condition is the one with the lowest mean validation loss over the Step 1 grid. The original screen ranked fusions by mean test MAE; `analysis/stage1_selection_check.py` re-ranks the same runs by validation loss and selects the same fusion in all six conditions (Supplementary Table S2 of the manuscript).
+The primary fusion per condition comes from the Step 1 grid: mean validation loss and mean test MAE select the same fusion in all six conditions (`analysis/stage1_selection_check.py`; Supplementary Table S2 of the manuscript).
 
 ```python
 BEST_FUSION_MAP = {
@@ -359,7 +359,7 @@ recomputed unmasked MAE equals the value in `metrics.json`.
 
 ## Hyperparameter Configuration
 
-The staged server scripts use the values below. The 255 analysed runs are **not uniform**: 199 used them, and 56 used TCN hidden dimension **128** and learning rate **5 × 10⁻⁴** (one of these also batch size 256). The recorded setting of every run is in `analysis/run_settings.csv`; `rerun_recorded.py` trains any run with its recorded setting. Training uses half-precision autocasting and gradient-norm clipping at 5; evaluation is in single precision.
+The staged server scripts use the values below. Two settings are used across the 255 analysed runs: 199 used these values, and 56 used TCN hidden dimension **128** and learning rate **5 × 10⁻⁴** (one of these also batch size 256). The recorded setting of every run is in `analysis/run_settings.csv`; `rerun_recorded.py` trains any run with its recorded setting. Training uses half-precision autocasting and gradient-norm clipping at 5; evaluation is in single precision.
 
 | Hyperparameter | Value |
 |----------------|-------|
@@ -428,12 +428,10 @@ The staged server scripts use the values below. The 255 analysed runs are **not 
 If you use this code in your research, please cite:
 
 ```bibtex
-@unpublished{AbahussenHashim2026fusionstvar,
+@unpublished{fusionstvar2026,
   title   = {Fusion Strategies and Enhancement Mechanisms in Spatio-Temporal Traffic
              Prediction: A Systematic Review with a Controlled Comparison of Graph and Temporal
              Convolutional Networks},
-  author  = {Aba Hussen, Omar S. and Hashim, Shaiful J. and
-             Samsudin, Khairulmizam and Shafri, Helmi Z. M.},
   year    = {2026},
   note    = {Manuscript}
 }
