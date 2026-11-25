@@ -3,8 +3,6 @@
 > **Fusion Strategies and Enhancement Mechanisms in Spatio-Temporal Traffic Prediction: A Systematic Review with a Controlled Comparison of Graph and Temporal Convolutional Networks**
 >
 > Empirical code accompanying the manuscript.
->
-> **Authors:** Omar S. Aba Hussen · Shaiful J. Hashim · Khairulmizam Samsudin · Helmi Z. M. Shafri
 
 ---
 
